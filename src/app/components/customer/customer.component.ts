@@ -126,7 +126,7 @@ export class CustomerComponent implements OnInit {
 
   checkInputsValidation() {
     if (this.customer.email != '' && this.customer.firstName != '' && this.customer.lastName != ''
-      && this.customer.locked != undefined && this.customer.roles.length > 0) {
+      && this.customer.locked != undefined && this.customer.roles && this.customer.roles.length > 0) {
       this.saveBtn = false;
     } else {
       this.saveBtn = true;
