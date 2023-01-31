@@ -1,0 +1,159 @@
+<mat-drawer-container class="w-full h-full border border-solid border-black bg-[#f1f5f9]" autosize>
+    <div class="bg-white p-4">
+        <p class="font-semibold text-3xl ml-7 mt-7">Users</p>
+    </div>
+
+
+    <mat-drawer position="end" [opened]="drawerOpened" #drawer
+        class="p-5 flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl" mode="side">
+        <div class="inset-0 px-4 sm:px-6">
+            <div class="flex justify-end mt-14">
+                <button
+                    class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    (click)="closeBtnClick() ">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
+            <div class="flex flex-col">
+                <mat-form-field class="w-80">
+                    <mat-label>First name</mat-label>
+                    <input (keyup)="checkInputsValidation()" [(ngModel)]="customer.firstName" matInput>
+                </mat-form-field>
+                <mat-form-field class="w-80">
+                    <mat-label>Last name</mat-label>
+                    <input (keyup)="checkInputsValidation()" [(ngModel)]="customer.lastName" matInput>
+                </mat-form-field>
+            </div>
+            <div class="flex gap-4">
+                <mat-form-field class="w-36">
+                    <mat-label>Email</mat-label>
+                    <input (keyup)="checkInputsValidation()" [(ngModel)]="customer.email" type="email" matInput
+                        placeholder="Ex. pat@example.com">
+                </mat-form-field>
+                <mat-form-field class="w-40">
+                    <mat-label>User Status</mat-label>
+                    <mat-select (ngModelChange)="checkInputsValidation()" [(ngModel)]="customer.locked">
+                        <mat-option *ngFor="let item of status" [value]="item.value">
+                            {{item.title}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div>
+                <div>
+                    <mat-form-field class="w-80">
+                        <mat-label>Roles</mat-label>
+                        <mat-select multiple [(ngModel)]="customer.roles" (ngModelChange)="checkInputsValidation()">
+                            <mat-option *ngFor="let roles of userRoles" [value]="roles.code">{{roles.name}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+            </div>
+            <div class="flex flex-row justify-between">
+                <button
+                    class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    (click)="closeBtnClick() ">Cancel</button>
+                <button
+                    class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 "
+                    (click)="createUpdateUser()">
+                    <span *ngIf="customer.id">
+                        Save
+                    </span>
+                    <span *ngIf="!customer.id">
+                        Add
+                    </span>
+                </button>
+            </div>
+        </div>
+
+    </mat-drawer>
+
+
+    <div class="w-11/12 bg-white m-auto p-5 rounded-xl mt-10 flex flex-col gap-11">
+        <div class="flex justify-end gap-5 items-center self-end w-1/5">
+            <div class="gap-6 md:grid-cols-2 w-full">
+                <div>
+                    <input #search [(ngModel)]="searchInfo['search']" type="text"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Search" required>
+                </div>
+            </div>
+
+            <button style="min-width: 72px;"
+                class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                (click)="addBtnClick()">+ Add</button>
+        </div>
+        <div class=" paginator">
+            <mat-paginator (page)="readAllUsers()" [length]="totalUsers" [pageSizeOptions]="[5,10, 50, 100]"
+                aria-label="Select page">
+            </mat-paginator>
+        </div>
+        <div class="w-full relative overflow-x-auto shadow-md sm:rounded-lg">
+            <table [matSortActive]="searchInfo['sortBy']" [matSortDirection]="searchInfo['sortDirection']" matSort
+                (matSortChange)="sortBy()" mat-table [dataSource]="dataSource"
+                class="w-full text-sm text-left text-gray-500 dark:text-gray-400 rounded-md">
+
+                <!-- Position Column -->
+                <ng-container matColumnDef="email">
+                    <th mat-sort-header mat-header-cell *matHeaderCellDef
+                        class="px-6 py-3 bg-white border-b dark:bg-gray-900 dark:border-gray-700"> Email </th>
+                    <td mat-cell *matCellDef="let element" style="cursor: pointer;" (click)="updateUserInfo(element)"
+                        class="px-6 py-4 bg-white border-b dark:bg-gray-900 dark:border-gray-700">
+                        {{element.email}} </td>
+                </ng-container>
+                <!-- Name Column -->
+                <ng-container matColumnDef="firstName">
+                    <th mat-sort-header mat-header-cell *matHeaderCellDef
+                        class="px-6 py-3 bg-white border-b dark:bg-gray-900 dark:border-gray-700"> First Name </th>
+                    <td mat-cell *matCellDef="let element"
+                        class="px-6 py-4 bg-white border-b dark:bg-gray-900 dark:border-gray-700"> {{element.firstName}}
+                    </td>
+                </ng-container>
+
+                <!-- Weight Column -->
+                <ng-container matColumnDef="lastName">
+                    <th mat-sort-header mat-header-cell *matHeaderCellDef
+                        class="px-6 py-3 bg-white border-b dark:bg-gray-900 dark:border-gray-700"> Last Name </th>
+                    <td mat-cell *matCellDef="let element"
+                        class="px-6 py-4 bg-white border-b dark:bg-gray-900 dark:border-gray-700"> {{element.lastName}}
+                    </td>
+
+                </ng-container>
+
+                <!-- Symbol Column -->
+                <ng-container matColumnDef="roles">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="px-6 py-3 bg-white border-b dark:bg-gray-900 dark:border-gray-700"> Roles </th>
+                    <td mat-cell *matCellDef="let element"
+                        class="px-6 py-4 bg-white border-b dark:bg-gray-900 dark:border-gray-700"> {{element.roles}}
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="locked">
+                    <th mat-sort-header mat-header-cell *matHeaderCellDef
+                        class="px-6 py-3 bg-white border-b dark:bg-gray-900 dark:border-gray-700"> Status </th>
+                    <td mat-cell *matCellDef="let element"
+                        class="px-6 py-4 bg-white border-b dark:bg-gray-900 dark:border-gray-700">
+                        {{getStatusText(element)}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="removeUser">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="px-6 py-3 bg-white border-b dark:bg-gray-900 dark:border-gray-700"> </th>
+                    <td mat-cell *matCellDef="let element"
+                        class="bg-white border-b dark:bg-gray-900 dark:border-gray-700"> <button
+                            class="px-6 py-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            (click)="DeleteUSer(element.id)" class="border-none bg-transparent cursor-pointer"><mat-icon
+                                color="warn">delete</mat-icon></button>
+                    </td>
+
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;">
+                </tr>
+            </table>
+        </div>
+    </div>
+</mat-drawer-container>
